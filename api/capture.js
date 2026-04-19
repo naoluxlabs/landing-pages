@@ -1,7 +1,13 @@
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { name, email, source } = req.body;
+  let body = req.body;
+  if (typeof body === 'string') {
+    try { body = JSON.parse(body); } catch { body = {}; }
+  }
+  if (!body || typeof body !== 'object') body = {};
+
+  const { name, email, source } = body;
   if (!email) return res.status(400).json({ error: 'Email required' });
 
   const notionKey = process.env.NOTION_API_KEY;
