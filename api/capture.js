@@ -1,11 +1,12 @@
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  let body = req.body;
-  if (typeof body === 'string') {
-    try { body = JSON.parse(body); } catch { body = {}; }
-  }
-  if (!body || typeof body !== 'object') body = {};
+  let body = {};
+  try {
+    const chunks = [];
+    for await (const chunk of req) chunks.push(chunk);
+    body = JSON.parse(Buffer.concat(chunks).toString());
+  } catch {}
 
   const { name, email, source } = body;
   if (!email) return res.status(400).json({ error: 'Email required' });
@@ -15,7 +16,7 @@ export default async function handler(req, res) {
 
   if (notionKey && dbId) {
     try {
-      await fetch('https://api.notion.com/v1/pages', {
+      const r = await fetch('https://api.notion.com/v1/pages', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${notionKey}`,
@@ -26,12 +27,14 @@ export default async function handler(req, res) {
           parent: { database_id: dbId },
           properties: {
             Name: { title: [{ text: { content: name || email } }] },
-            Email: { email },
+            Email: { email: email },
             Source: { rich_text: [{ text: { content: source || 'unknown' } }] },
             'Signed Up': { date: { start: new Date().toISOString() } },
           },
         }),
       });
+      const data = await r.json();
+      if (!r.ok) console.error('Notion error:', JSON.stringify(data));
     } catch (err) {
       console.error('Notion error:', err);
     }
