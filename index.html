@@ -32,7 +32,7 @@
       <button type="submit">Send Me the Free Guide →</button>
     </form>
     <p class="note">No spam. Unsubscribe anytime.</p>
-    <div class="success" id="success">✓ Check your inbox — your guide is on the way!</div>
+    <div class="success" id="success">✓ Your guide is downloading now!</div>
   </div>
   <script>
     document.getElementById('form').addEventListener('submit', async (e) => {
@@ -44,7 +44,12 @@
       } catch {}
       document.getElementById('form').style.display = 'none';
       document.getElementById('success').style.display = 'block';
-      setTimeout(() => { window.location.href = 'https://drive.google.com/uc?export=download&id=1MXFkza1n2cZTHyRBVgZvkeE0J6YXqKwo'; }, 2000);
+      const a = document.createElement('a');
+      a.href = 'https://drive.google.com/uc?export=download&id=1MXFkza1n2cZTHyRBVgZvkeE0J6YXqKwo';
+      a.download = 'Apex-Part1-Foundations.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     });
   </script>
 </body>
